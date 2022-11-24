@@ -18,6 +18,20 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.8ky5qyn.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send('unauthorized access')
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, function (error, decoded) {
+        if (error) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded
+        next()
+    })
+}
 
 async function run(){
     try{
@@ -30,6 +44,7 @@ async function run(){
             const categories= await categoriesCollection.find(query).toArray()
             res.send(categories)
         })
+        
 
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id
@@ -50,6 +65,14 @@ async function run(){
             res.status(403).send({ jwToken: '' })
 
         })
+         
+        app.post('/products', async (req, res) => {
+            const product = req.body
+            // console.log(product);
+            const result = await productsCollection.insertOne(product)
+            res.send(result)
+        });
+
 
         app.post('/users', async (req, res) => {
             const user = req.body
