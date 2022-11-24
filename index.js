@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const jwt=require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000
 
@@ -22,12 +23,34 @@ async function run(){
     try{
         const categoriesCollection = client.db('bike-sales').collection('categories')
         const usersCollection = client.db('bike-sales').collection('users')
+        const productsCollection = client.db('bike-sales').collection('products')
 
         app.get('/categories',async(req,res)=>{
             const query={}
             const categories= await categoriesCollection.find(query).toArray()
             res.send(categories)
         })
+
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const products = await productsCollection.findOne(query)
+            res.send(products)
+        });
+         
+        app.get('/jwt', async (req, res) => {
+
+            const email = req.query.email
+            const query = { email: email }
+            const user = await usersCollection.findOne(query)
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_SECRET_TOKEN, { expiresIn: '7d' })
+                return res.send({ jwToken: token })
+            }
+            res.status(403).send({ jwToken: '' })
+
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body
             
