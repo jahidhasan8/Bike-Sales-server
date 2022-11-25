@@ -73,6 +73,13 @@ async function run(){
             res.send(result)
         });
 
+        app.get('/users/account/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ account: user?.accountType });
+
+        })
 
         app.post('/users', async (req, res) => {
             const user = req.body
