@@ -81,6 +81,19 @@ async function run(){
 
         })
 
+        app.get('/users',async(req,res)=>{
+           
+            let query={} 
+            
+             if (req.query.accountType) {
+                query = {
+                    accountType: req.query.accountType
+                }
+            }
+            const users=await usersCollection.find(query).toArray();
+            res.send(users)
+        })
+    
         app.post('/users', async (req, res) => {
             const user = req.body
             
