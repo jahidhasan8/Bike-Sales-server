@@ -38,6 +38,7 @@ async function run(){
         const categoriesCollection = client.db('bike-sales').collection('categories')
         const usersCollection = client.db('bike-sales').collection('users')
         const productsCollection = client.db('bike-sales').collection('products')
+        const bookingCollection = client.db('bike-sales').collection('bookings')
 
         app.get('/categories',async(req,res)=>{
             const query={}
@@ -53,6 +54,14 @@ async function run(){
             res.send(products)
         });
          
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body
+           
+            const result = await bookingCollection.insertOne(booking)
+            res.send(result)
+        });
+
+
         app.get('/jwt', async (req, res) => {
 
             const email = req.query.email
@@ -98,7 +107,7 @@ async function run(){
             const user = req.body
             
             const result = await usersCollection.insertOne(user)
-            console.log(result);
+            // console.log(result);
             res.send(result)
         })
 
