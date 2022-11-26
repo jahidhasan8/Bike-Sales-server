@@ -41,6 +41,8 @@ async function run() {
         const usersCollection = client.db('bike-sales').collection('users')
         const productsCollection = client.db('bike-sales').collection('products')
         const bookingCollection = client.db('bike-sales').collection('bookings')
+        const paymentsCollection = client.db('bike-sales').collection('payments')
+
 
         app.get('/categories', async (req, res) => {
             const query = {}
@@ -141,6 +143,14 @@ async function run() {
                 clientSecret: paymentIntent.client_secret,
             });
         });
+         
+
+        app.post('/payments',async(req,res)=>{
+            const payment=req.body 
+            const result =await paymentsCollection.insertOne(payment)
+            res.send(result)
+        })
+        
 
         app.put('/products/:id', async (req, res) => {
 
