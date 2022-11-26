@@ -56,7 +56,23 @@ async function run(){
             const products = await productsCollection.find(query).toArray()
             res.send(products)
         })
+         
+        app.get('/products/advertised',async(req,res)=>{
+            // const advertise=req.query.advertise
+            // console.log(typeof advertise);
+            const query={advertise:true}
+            const advertised=await productsCollection.find(query).toArray()
+            res.send(advertised)
+        })
+          
 
+        // app.get('/users/admin/:email', async (req, res) => {
+        //     const email = req.params.email
+        //     const query = { email }
+        //     const user = await usersCollection.findOne(query);
+        //     res.send({ isAdmin: user?.role === 'admin' });
+
+        // })
 
         app.get('/products/:id', async (req, res) => {
             const categoryId = req.params.id
@@ -107,6 +123,21 @@ async function run(){
             const result = await productsCollection.insertOne(product)
             res.send(result)
         });
+        
+        app.put('/products/:id', async (req, res) => {
+
+              const id = req.params.id
+              const filter = { _id: ObjectId(id) }
+              const options = { upsert: true }
+              const updatedDoc = {
+                  $set: {
+                      advertise: true
+                  }
+              }
+              const result = await productsCollection.updateOne(filter, updatedDoc, options)
+              res.send(result);
+          });
+
 
         app.get('/users/account/:email', async (req, res) => {
             const email = req.params.email
