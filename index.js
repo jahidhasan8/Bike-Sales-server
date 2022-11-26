@@ -45,7 +45,18 @@ async function run(){
             const categories= await categoriesCollection.find(query).toArray()
             res.send(categories)
         })
-        
+         
+        app.get('/products', async (req, res) => {
+
+            const email = req.query.email
+
+            const query = { 
+               sellerEmail: email
+            }
+            const products = await productsCollection.find(query).toArray()
+            res.send(products)
+        })
+
 
         app.get('/products/:id', async (req, res) => {
             const categoryId = req.params.id
@@ -54,13 +65,18 @@ async function run(){
             res.send(products)
         });
           
-        app.get('/bookings', async (req, res) => {
+        app.get('/bookings',verifyJWT, async (req, res) => {
 
             const email = req.query.email
-
+             const decodedMail=req.decoded.email
             const query = { 
                 email: email
             }
+
+            if (email !== decodedMail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
             const bookings = await bookingCollection.find(query).toArray()
             res.send(bookings)
         })
@@ -77,11 +93,11 @@ async function run(){
             const email = req.query.email
             const query = { email: email }
             const user = await usersCollection.findOne(query)
-            if (user) {
+            if (user && user?.email) {
                 const token = jwt.sign({ email }, process.env.ACCESS_SECRET_TOKEN, { expiresIn: '7d' })
                 return res.send({ jwToken: token })
             }
-            res.status(403).send({ jwToken: '' })
+            res.status(403).send({ jwToken: 'forbidden access' })
 
         })
          
