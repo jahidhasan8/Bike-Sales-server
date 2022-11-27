@@ -15,8 +15,6 @@ app.use(express.json())
 
 
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.8ky5qyn.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -26,6 +24,7 @@ function verifyJWT(req, res, next) {
         return res.status(401).send('unauthorized access')
     }
     const token = authHeader.split(' ')[1];
+
     jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, function (error, decoded) {
         if (error) {
             return res.status(403).send({ message: 'forbidden access' })
@@ -138,7 +137,7 @@ async function run() {
                 const token = jwt.sign({ email }, process.env.ACCESS_SECRET_TOKEN, { expiresIn: '7d' })
                 return res.send({ jwToken: token })
             }
-            res.status(403).send({ jwToken: 'forbidden access' })
+            res.status(403).send({ jwToken: '' })
 
         })
 
@@ -181,11 +180,15 @@ async function run() {
         })
 
 
+        app.get('/users/account/:email',verifyJWT, async (req, res) => {
 
-
-        app.get('/users/account/:email', async (req, res) => {
             const email = req.params.email
-            const query = { email }
+            const decodedMail = req.decoded.email
+
+            if (email !== decodedMail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            const query = {email: email }
             const user = await usersCollection.findOne(query);
             res.send({ account: user?.accountType });
 
