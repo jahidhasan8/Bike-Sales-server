@@ -66,7 +66,8 @@ async function run() {
                 
             }
             const advertised = await productsCollection.find(query).toArray()
-            res.send(advertised)
+            const unsoldProduct= advertised.filter(product=> product?.sold !==true )
+            res.send(unsoldProduct)
         })
 
         app.get('/products/:id', async (req, res) => {
