@@ -62,7 +62,10 @@ async function run() {
         })
 
         app.get('/products/advertised', async (req, res) => {
-            const query = { advertise: true }
+            const query = { 
+                advertise: true,
+                paid:false
+            }
             const advertised = await productsCollection.find(query).toArray()
             res.send(advertised)
         })
@@ -120,7 +123,6 @@ async function run() {
 
         app.post('/products', async (req, res) => {
             const product = req.body
-            // console.log(product);
             const result = await productsCollection.insertOne(product)
             res.send(result)
         });
