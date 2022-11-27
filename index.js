@@ -63,7 +63,7 @@ async function run() {
         app.get('/products/advertised', async (req, res) => {
             const query = {
                 advertise: true,
-                paid: false
+                
             }
             const advertised = await productsCollection.find(query).toArray()
             res.send(advertised)
@@ -71,9 +71,12 @@ async function run() {
 
         app.get('/products/:id', async (req, res) => {
             const categoryId = req.params.id
-            const query = { categoryId }
+            const query = {
+                categoryId 
+            }
             const products = await productsCollection.find(query).toArray()
-            res.send(products)
+            const unsoldProduct= products.filter(product=> product?.sold !==true )
+            res.send(unsoldProduct)
         });
 
         app.post('/products', async (req, res) => {
@@ -174,7 +177,17 @@ async function run() {
                     transactionId: payment.transactionId
                 }
             }
-            const updatedData = await bookingCollection.updateOne(query, updatedInfo)
+            const updatedData = await bookingCollection.updateOne(query, updatedInfo) 
+
+            const productId=payment.productId 
+            const productQuery={_id:ObjectId(productId)}
+            const updateInfo = {
+                $set: {
+                    sold: true,
+            
+                }
+            }
+            const productData=await productsCollection.updateOne(productQuery,updateInfo)
 
             res.send(result)
         })
@@ -236,6 +249,13 @@ async function run() {
             const result = await usersCollection.deleteOne(filter)
             res.send(result)
 
+        })
+
+        app.delete('/products/:id',verifyJWT,async(req,res)=>{
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const result = await productsCollection.deleteOne(filter)
+            res.send(result)
         })
     }
     finally {
