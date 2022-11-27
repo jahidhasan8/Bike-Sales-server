@@ -62,9 +62,9 @@ async function run() {
         })
 
         app.get('/products/advertised', async (req, res) => {
-            const query = { 
+            const query = {
                 advertise: true,
-                paid:false
+                paid: false
             }
             const advertised = await productsCollection.find(query).toArray()
             res.send(advertised)
@@ -76,6 +76,27 @@ async function run() {
             const products = await productsCollection.find(query).toArray()
             res.send(products)
         });
+
+        app.post('/products', async (req, res) => {
+            const product = req.body
+            const result = await productsCollection.insertOne(product)
+            res.send(result)
+        });
+
+        app.put('/products/:id', async (req, res) => {
+
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    advertise: true
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options)
+            res.send(result);
+        });
+
 
         app.get('/bookings', verifyJWT, async (req, res) => {
 
@@ -121,62 +142,45 @@ async function run() {
 
         })
 
-        app.post('/products', async (req, res) => {
-            const product = req.body
-            const result = await productsCollection.insertOne(product)
-            res.send(result)
-        });
 
         app.post("/create-payment-intent", async (req, res) => {
 
-             const booking=req.body
-             const price=booking.price
-             const amount=price*100
+            const booking = req.body
+            const price = booking.price
+            const amount = price * 100
 
-             const paymentIntent = await stripe.paymentIntents.create({
+            const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: "usd",
                 "payment_method_types": [
-                  "card"
+                    "card"
                 ],
-              });
+            });
 
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
         });
-         
 
-        app.post('/payments',async(req,res)=>{
-            const payment=req.body 
-            const result =await paymentsCollection.insertOne(payment)
-            const id=payment.bookingId
-            const query={_id:ObjectId(id)}
 
-            const updatedInfo={
-                $set:{
-                    paid:true,
-                    transactionId:payment.transactionId
+        app.post('/payments', async (req, res) => {
+            const payment = req.body
+            const result = await paymentsCollection.insertOne(payment)
+            const id = payment.bookingId
+            const query = { _id: ObjectId(id) }
+
+            const updatedInfo = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
                 }
             }
-            const updatedData=await bookingCollection.updateOne(query,updatedInfo)
+            const updatedData = await bookingCollection.updateOne(query, updatedInfo)
+
             res.send(result)
         })
-        
 
-        app.put('/products/:id', async (req, res) => {
 
-            const id = req.params.id
-            const filter = { _id: ObjectId(id) }
-            const options = { upsert: true }
-            const updatedDoc = {
-                $set: {
-                    advertise: true
-                }
-            }
-            const result = await productsCollection.updateOne(filter, updatedDoc, options)
-            res.send(result);
-        });
 
 
         app.get('/users/account/:email', async (req, res) => {
@@ -207,6 +211,21 @@ async function run() {
             // console.log(result);
             res.send(result)
         })
+
+        app.put('/users/:id', async (req, res) => {
+
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    verify: true
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options)
+            res.send(result);
+        });
+
 
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id
