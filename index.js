@@ -42,6 +42,16 @@ async function run() {
         const bookingCollection = client.db('bike-sales').collection('bookings')
         const paymentsCollection = client.db('bike-sales').collection('payments')
 
+        
+        const verifySeller = async(req, res, next) => {
+            const decodedEmail = req.decoded.email
+            const query = { email: decodedEmail }
+            const user = await usersCollection.findOne(query)
+            if (user?.accountType !== 'seller') {
+                return res.status(403).send({ message: 'Forbidden access' })
+            }
+            next()
+        }
 
         app.get('/categories', async (req, res) => {
             const query = {}
@@ -90,11 +100,19 @@ async function run() {
             res.send(unsoldProduct)
         });
 
-        app.post('/products',verifyJWT, async (req, res) => {
+
+
+
+
+        app.post('/products',verifyJWT,verifySeller, async (req, res) => {
             const product = req.body
             const result = await productsCollection.insertOne(product)
              res.send(result)
         });
+
+
+
+
 
         app.put('/products/:id', async (req, res) => {
 
