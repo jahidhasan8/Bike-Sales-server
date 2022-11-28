@@ -70,6 +70,15 @@ async function run() {
             res.send(unsoldProduct)
         })
 
+        app.get('/products/reported', async (req, res) => {
+            const query = {
+                report: true,
+
+            }
+            const reportedProduct = await productsCollection.find(query).toArray()
+            res.send(reportedProduct)
+        })
+
         app.get('/products/:id', async (req, res) => {
             const categoryId = req.params.id
             const query = {
