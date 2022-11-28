@@ -60,23 +60,23 @@ async function run() {
             res.send(products)
         })
 
-        app.get('/products/advertised', async (req, res) => {
+        app.get('/products/advertised',verifyJWT, async (req, res) => {
             const query = {
                 advertise: true,
-                
+
             }
             const advertised = await productsCollection.find(query).toArray()
-            const unsoldProduct= advertised.filter(product=> product?.sold !==true )
+            const unsoldProduct = advertised.filter(product => product?.sold !== true)
             res.send(unsoldProduct)
         })
 
         app.get('/products/:id', async (req, res) => {
             const categoryId = req.params.id
             const query = {
-                categoryId 
+                categoryId
             }
             const products = await productsCollection.find(query).toArray()
-            const unsoldProduct= products.filter(product=> product?.sold !==true )
+            const unsoldProduct = products.filter(product => product?.sold !== true)
             res.send(unsoldProduct)
         });
 
@@ -97,6 +97,22 @@ async function run() {
                 }
             }
             const result = await productsCollection.updateOne(filter, updatedDoc, options)
+            res.send(result);
+        });
+
+        app.put('/products/report/:id', async (req, res) => {
+
+            const id = req.params.id
+            
+            const filter = {_id:ObjectId(id)}
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    report: true
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options)
+            console.log(result);
             res.send(result);
         });
 
@@ -178,23 +194,23 @@ async function run() {
                     transactionId: payment.transactionId
                 }
             }
-            const updatedData = await bookingCollection.updateOne(query, updatedInfo) 
+            const updatedData = await bookingCollection.updateOne(query, updatedInfo)
 
-            const productId=payment.productId 
-            const productQuery={_id:ObjectId(productId)}
+            const productId = payment.productId
+            const productQuery = { _id: ObjectId(productId) }
             const updateInfo = {
                 $set: {
                     sold: true,
-            
+
                 }
             }
-            const productData=await productsCollection.updateOne(productQuery,updateInfo)
+            const productData = await productsCollection.updateOne(productQuery, updateInfo)
 
             res.send(result)
         })
 
 
-        app.get('/users/account/:email',verifyJWT, async (req, res) => {
+        app.get('/users/account/:email', verifyJWT, async (req, res) => {
 
             const email = req.params.email
             const decodedMail = req.decoded.email
@@ -202,7 +218,7 @@ async function run() {
             if (email !== decodedMail) {
                 return res.status(403).send({ message: 'forbidden access' })
             }
-            const query = {email: email }
+            const query = { email: email }
             const user = await usersCollection.findOne(query);
             res.send({ account: user?.accountType });
 
@@ -252,7 +268,7 @@ async function run() {
 
         })
 
-        app.delete('/products/:id',verifyJWT,async(req,res)=>{
+        app.delete('/products/:id', verifyJWT, async (req, res) => {
             const id = req.params.id
             const filter = { _id: ObjectId(id) }
             const result = await productsCollection.deleteOne(filter)
