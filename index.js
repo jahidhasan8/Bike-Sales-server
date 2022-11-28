@@ -60,7 +60,8 @@ async function run() {
             res.send(products)
         })
 
-        app.get('/products/advertised',verifyJWT, async (req, res) => {
+        app.get('/products/advertised', async (req, res) => {
+
             const query = {
                 advertise: true,
 
@@ -89,7 +90,7 @@ async function run() {
             res.send(unsoldProduct)
         });
 
-        app.post('/products', async (req, res) => {
+        app.post('/products',verifyJWT, async (req, res) => {
             const product = req.body
             const result = await productsCollection.insertOne(product)
              res.send(result)
