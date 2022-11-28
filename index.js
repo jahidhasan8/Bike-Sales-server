@@ -92,7 +92,8 @@ async function run() {
         app.post('/products', async (req, res) => {
             const product = req.body
             const result = await productsCollection.insertOne(product)
-            res.send(result)
+            // console.log(product)
+             res.send(result)
         });
 
         app.put('/products/:id', async (req, res) => {
@@ -121,7 +122,6 @@ async function run() {
                 }
             }
             const result = await productsCollection.updateOne(filter, updatedDoc, options)
-            console.log(result);
             res.send(result);
         });
 
@@ -259,6 +259,8 @@ async function run() {
             const users = await usersCollection.find(query).toArray();
             res.send(users)
         })
+
+
 
         app.post('/users', async (req, res) => {
             const user = req.body
